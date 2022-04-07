@@ -59,6 +59,7 @@ class AbstractDQN(Agent):
 
         self._n_updates = 0
 
+        self._tb_writer = approximator_params.pop('tb_writer')
         apprx_params_train = deepcopy(approximator_params)
         apprx_params_target = deepcopy(approximator_params)
 
@@ -87,6 +88,10 @@ class AbstractDQN(Agent):
         self._n_updates += 1
         if self._n_updates % self._target_update_frequency == 0:
             self._update_target()
+
+        loss = self.approximator.model.loss_fit
+        if self._tb_writer and (loss is not None):
+            self._tb_writer.add_scalar('train loss', loss, self._n_updates)
 
     def _fit_standard(self, dataset):
         self._replay_memory.add(dataset)
