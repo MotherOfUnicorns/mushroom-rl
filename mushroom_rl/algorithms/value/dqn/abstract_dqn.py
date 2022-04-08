@@ -61,12 +61,18 @@ class AbstractDQN(Agent):
         self._n_updates = 0
 
         self._tb_writer = approximator_params.pop('tb_writer')
+        self._lr_scheduler = approximator_params.pop('lr_scheduler')
         apprx_params_train = deepcopy(approximator_params)
         apprx_params_target = deepcopy(approximator_params)
 
         self._initialize_regressors(approximator, apprx_params_train,
                                     apprx_params_target)
         policy.set_q(self.approximator)
+
+        if self._lr_scheduler is not None:
+            self._lr_scheduler = self._lr_scheduler['class'](
+                self.approximator.model._optimizer,
+                **self._lr_scheduler['params'])
 
         self._add_save_attr(
             _fit_params='pickle',
@@ -93,6 +99,10 @@ class AbstractDQN(Agent):
         loss = self.approximator.model.loss_fit
         if self._tb_writer and (loss is not None):
             self._tb_writer.add_scalar('train loss', loss, self._n_updates)
+
+        if (self._lr_scheduler is not None) and (loss is not None):
+            # avoid colling lr_scheduler.step() before optimizer.step()
+            self._lr_scheduler.step(epoch=self._n_updates)
 
     def _fit_standard(self, dataset):
         self._replay_memory.add(dataset)
