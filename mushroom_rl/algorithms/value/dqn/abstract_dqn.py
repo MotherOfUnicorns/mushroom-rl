@@ -37,6 +37,7 @@ class AbstractDQN(Agent):
             predict_params (dict, None): parameters for the prediction with the
                 approximator;
             clip_reward (bool, False): whether to clip the reward or not.
+            clip_gradient (bool, False): clip gradient before backpropagation.
 
         """
         self._fit_params = dict() if fit_params is None else fit_params
