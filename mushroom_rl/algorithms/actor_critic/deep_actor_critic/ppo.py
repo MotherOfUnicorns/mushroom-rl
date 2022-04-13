@@ -53,6 +53,7 @@ class PPO(Agent):
         self._lambda = to_parameter(lam)
         self._ent_coeff = to_parameter(ent_coeff)
 
+        self._tb_writer = critic_params.pop('tb_writer')
         self._V = Regressor(TorchApproximator, **critic_params)
 
         self._iter = 1
@@ -89,6 +90,10 @@ class PPO(Agent):
 
         self._V.fit(x, v_target, **self._critic_fit_params)
 
+        loss = self._V.model.loss_fit
+        if self._tb_writer and (loss is not None):
+            self._tb_writer.add_scalar('train loss (critic)', loss, 5 * self._iter)
+
         self._update_policy(obs, act, adv, old_log_p)
 
         # Print fit information
@@ -110,6 +115,9 @@ class PPO(Agent):
                 loss -= self._ent_coeff()*self.policy.entropy_t(obs_i)
                 loss.backward()
                 self._optimizer.step()
+
+        if self._tb_writer:
+            self._tb_writer.add_scalar('train loss (actor)', loss.item(), 5 * self._iter)
 
     def _log_info(self, dataset, x, v_target, old_pol_dist):
         if self._logger:
