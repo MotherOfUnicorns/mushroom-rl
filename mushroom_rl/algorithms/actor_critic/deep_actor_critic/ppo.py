@@ -92,7 +92,7 @@ class PPO(Agent):
 
         loss = self._V.model.loss_fit
         if self._tb_writer and (loss is not None):
-            self._tb_writer.add_scalar('train loss (critic)', loss, 5 * self._iter)
+            self._tb_writer.add_scalar('train loss (critic)', loss, self._iter)
 
         self._update_policy(obs, act, adv, old_log_p)
 
@@ -117,7 +117,7 @@ class PPO(Agent):
                 self._optimizer.step()
 
         if self._tb_writer:
-            self._tb_writer.add_scalar('train loss (actor)', loss.item(), 5 * self._iter)
+            self._tb_writer.add_scalar('train loss (actor)', loss.item(), self._iter)
 
     def _log_info(self, dataset, x, v_target, old_pol_dist):
         if self._logger:
