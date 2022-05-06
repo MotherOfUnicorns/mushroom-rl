@@ -212,7 +212,7 @@ class Serializable(object):
     @staticmethod
     def _load_torch(zip_file, name):
         with zip_file.open(name, 'r') as f:
-            return torch.load(f)
+            return torch.load(f, map_location=torch.device('cpu'))
 
     @staticmethod
     def _load_json(zip_file, name):
